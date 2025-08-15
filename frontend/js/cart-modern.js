@@ -1,95 +1,88 @@
-// js/cart-modern.js
+// frontend/js/cart-modern.js
+
 (function() {
   // --- 1. DOM Element Selection ---
   const cartItemsContainer = document.getElementById('cart-items-container');
   const orderSummaryContainer = document.getElementById('order-summary-container');
   const emptyCartMessage = document.getElementById('empty-cart-message');
-  
   const summarySubtotalElem = document.getElementById('summary-subtotal');
+  const summaryShippingElem = document.getElementById('summary-shipping');
   const summaryTotalElem = document.getElementById('summary-total');
-  
   const checkoutBtn = document.getElementById('checkout-btn');
-  const checkoutMessage = document.getElementById('checkout-message');
 
   // --- 2. Core Cart Logic ---
 
-  /**
-   * Retrieves the cart from localStorage.
-   * @returns {Array} The cart items.
-   */
   function getCart() {
     return JSON.parse(localStorage.getItem('cart') || '[]');
   }
 
-  /**
-   * Saves the cart to localStorage.
-   * @param {Array} cart - The cart array to save.
-   */
   function saveCart(cart) {
     localStorage.setItem('cart', JSON.stringify(cart));
   }
 
-  /**
-   * Updates the quantity of a specific item in the cart.
-   * @param {string} productId - The ID of the product to update.
-   * @param {number} newQuantity - The new quantity for the product.
-   */
   function updateQuantity(productId, newQuantity) {
     const cart = getCart();
     const itemIndex = cart.findIndex(item => item.productId === productId);
-    
-    if (itemIndex > -1 && newQuantity > 0) {
-      cart[itemIndex].qty = newQuantity;
+    // Ensure quantity is a valid number and at least 1
+    const qty = Math.max(1, parseInt(newQuantity, 10) || 1);
+    if (itemIndex > -1) {
+      cart[itemIndex].qty = qty;
       saveCart(cart);
-      renderCart(); // Re-render the entire cart to reflect changes
+      renderCart();
     }
   }
 
-  /**
-   * Removes an item completely from the cart.
-   * @param {string} productId - The ID of the product to remove.
-   */
   function removeItem(productId) {
     let cart = getCart();
     cart = cart.filter(item => item.productId !== productId);
     saveCart(cart);
-    renderCart(); // Re-render the entire cart
+    renderCart();
   }
 
   /**
-   * Calculates and displays the subtotal and total.
+   * --- THIS IS THE FIX ---
+   * This function is now more robust. It uses parseFloat to ensure all values are
+   * treated as numbers before doing math, which fixes the $0.00 total bug.
    */
   function calculateTotals() {
     const cart = getCart();
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const shipping = 5.00; // Example fixed shipping
+    
+    // ENHANCEMENT: Use parseFloat for safety, preventing calculation errors.
+    const subtotal = cart.reduce((sum, item) => {
+        const price = parseFloat(item.price) || 0;
+        const qty = parseInt(item.qty, 10) || 0;
+        return sum + (price * qty);
+    }, 0);
+
+    const shipping = subtotal > 100 || subtotal === 0 ? 0 : 5.00; // Free shipping for orders over $100
     const total = subtotal + shipping;
 
     summarySubtotalElem.textContent = `$${subtotal.toFixed(2)}`;
+    summaryShippingElem.textContent = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`;
     summaryTotalElem.textContent = `$${total.toFixed(2)}`;
   }
 
   /**
-   * The main function to render the entire cart page.
+   * --- THIS IS THE REDESIGN ---
+   * The main render function now creates a more professional layout for each cart item.
    */
   function renderCart() {
     const cart = getCart();
 
     if (cart.length === 0) {
-      // Show the empty cart message and hide the main content
       emptyCartMessage.style.display = 'block';
-      cartItemsContainer.style.display = 'none';
-      orderSummaryContainer.style.display = 'none';
+      document.querySelector('.cart-grid').style.display = 'none';
+      document.querySelector('.cart-actions-header').style.display = 'none';
       return;
     }
 
-    // Ensure the main content is visible and empty message is hidden
     emptyCartMessage.style.display = 'none';
-    cartItemsContainer.style.display = 'block';
+    document.querySelector('.cart-grid').style.display = 'grid';
+    document.querySelector('.cart-actions-header').style.display = 'block';
+    
     orderSummaryContainer.style.display = 'block';
 
-    cartItemsContainer.innerHTML = ''; // Clear previous items
-
+    cartItemsContainer.innerHTML = '';
     cart.forEach(item => {
       const itemTotalPrice = (item.price * item.qty).toFixed(2);
       const cartItemHTML = `
@@ -100,11 +93,12 @@
             <p class="item-price">$${item.price.toFixed(2)}</p>
           </div>
           <div class="item-quantity">
-            <label for="qty-${item.productId}" class="sr-only">Quantity:</label>
-            <input type="number" id="qty-${item.productId}" value="${item.qty}" min="1" class="quantity-input" data-id="${item.productId}">
+            <input type="number" value="${item.qty}" min="1" class="quantity-input" data-id="${item.productId}" aria-label="Quantity for ${item.name}">
           </div>
           <p class="item-total-price">$${itemTotalPrice}</p>
-          <button class="remove-item-btn" data-id="${item.productId}" aria-label="Remove ${item.name}">×</button>
+          <button class="remove-item-btn" data-id="${item.productId}" aria-label="Remove ${item.name}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+          </button>
         </div>
       `;
       cartItemsContainer.insertAdjacentHTML('beforeend', cartItemHTML);
@@ -114,41 +108,30 @@
   }
 
   // --- 3. Event Listeners ---
-
-  // Event Delegation for quantity changes and item removal
   cartItemsContainer.addEventListener('click', (event) => {
-    const target = event.target;
-
-    // Handle item removal
-    if (target.classList.contains('remove-item-btn')) {
-      const productId = target.dataset.id;
-      removeItem(productId);
+    const removeButton = event.target.closest('.remove-item-btn');
+    if (removeButton) {
+      removeItem(removeButton.dataset.id);
     }
   });
 
   cartItemsContainer.addEventListener('change', (event) => {
-    const target = event.target;
-    // Handle quantity updates
-    if (target.classList.contains('quantity-input')) {
-      const productId = target.dataset.id;
-      const newQuantity = parseInt(target.value, 10);
-      updateQuantity(productId, newQuantity);
+    if (event.target.classList.contains('quantity-input')) {
+      updateQuantity(event.target.dataset.id, event.target.value);
     }
   });
   
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
-        const cart = getCart();
-        if (cart.length === 0) {
-            alert("Your cart is empty!");
-            return;
-        }
-        // Redirect to the new checkout page
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html?redirect=checkout';
+      } else {
         window.location.href = 'checkout.html';
+      }
     });
   }
 
-  // --- 4. Initial Load ---
+  // Initial Load
   renderCart();
-
 })();

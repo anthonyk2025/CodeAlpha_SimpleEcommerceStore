@@ -35,7 +35,7 @@ const orderSchema = new mongoose.Schema(
     paidAt: { type: Date },
     isDelivered: { type: Boolean, required: true, default: false },
     deliveredAt: { type: Date },
-    // ADD THIS NEW FIELD
+    // NEW: Store payment result from Stripe
     paymentResult: {
       id: { type: String },
       status: { type: String },

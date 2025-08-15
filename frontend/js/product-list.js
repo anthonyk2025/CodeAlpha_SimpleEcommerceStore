@@ -1,10 +1,12 @@
 // frontend/js/product-list.js
-
 (function() {
-  const API_URL = window.location.origin.includes("localhost") ? "http://localhost:5000/api" : `${window.location.origin}/api`;
+  const API_URL = "/api/products";
   let allProducts = [];
-  let currentCategory = 'all';
-  let currentSort = 'default';
+  let currentFilters = {
+    category: 'all',
+    sort: 'default',
+    search: ''
+  };
 
   const productGrid = document.getElementById("product-grid");
   const loadingIndicator = document.getElementById("loading-indicator");
@@ -13,34 +15,35 @@
   const filterButtonsContainer = document.getElementById("filter-buttons");
   const sortBySelect = document.getElementById("sort-by");
 
-  async function fetchAndRenderProducts() {
-    showLoading(true);
+  async function fetchProducts() {
+    loadingIndicator.style.display = "block";
     try {
-      const res = await fetch(`${API_URL}/products`);
+      const res = await fetch(API_URL);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       allProducts = await res.json();
       renderProducts();
     } catch (error) {
       console.error("Failed to load products:", error);
-      showError("Could not load products. Please try again later.");
+      productGrid.innerHTML = `<p class="error-text">Could not load products. Please try refreshing the page.</p>`;
     } finally {
-      showLoading(false);
+      loadingIndicator.style.display = "none";
     }
   }
 
   function renderProducts() {
-    productGrid.innerHTML = "";
-    const searchTerm = searchBar.value.toLowerCase();
     let productsToDisplay = [...allProducts];
 
-    if (currentCategory !== 'all') {
-      productsToDisplay = productsToDisplay.filter(product => product.category === currentCategory);
+    // Filter by category
+    if (currentFilters.category !== 'all') {
+      productsToDisplay = productsToDisplay.filter(p => p.category === currentFilters.category);
     }
-    if (searchTerm) {
-      productsToDisplay = productsToDisplay.filter(product => product.name.toLowerCase().includes(searchTerm));
+    // Filter by search term
+    if (currentFilters.search) {
+      productsToDisplay = productsToDisplay.filter(p => p.name.toLowerCase().includes(currentFilters.search));
     }
     
-    switch (currentSort) {
+    // Sort products
+    switch (currentFilters.sort) {
       case 'price-asc':
         productsToDisplay.sort((a, b) => a.price - b.price);
         break;
@@ -52,6 +55,7 @@
         break;
     }
     
+    productGrid.innerHTML = "";
     if (productsToDisplay.length === 0) {
       noResultsMessage.style.display = "block";
       return;
@@ -62,8 +66,8 @@
       const badgeHTML = product.badge ? `<div class="product-badge">${product.badge}</div>` : '';
       const productCardHTML = `
         <article class="product-card">
-          ${badgeHTML}
           <a href="product.html?id=${product._id}">
+            ${badgeHTML}
             <img src="${product.image}" alt="${product.name}" class="product-image">
             <div class="product-info">
               <span class="product-category">${product.category}</span>
@@ -78,75 +82,61 @@
     });
   }
 
-  // --- THIS IS THE NEW, CORRECT addToCart FUNCTION ---
-  function addToCart(product) {
+  function addToCart(productData) {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItemIndex = cart.findIndex(item => item.productId === product.productId);
+    const existingItem = cart.find(item => item.productId === productData.productId);
 
-    if (existingItemIndex > -1) {
-      cart[existingItemIndex].qty += 1; // Add one to the quantity
+    if (existingItem) {
+      existingItem.qty += 1;
     } else {
-      cart.push({ ...product, qty: 1 }); // Add the new item with quantity 1
+      cart.push({ ...productData, qty: 1 });
     }
     
     localStorage.setItem("cart", JSON.stringify(cart));
   }
 
-  function showLoading(isLoading) { /* ... (This function is fine) ... */ }
-  function showError(message) { /* ... (This function is fine) ... */ }
+  productGrid.addEventListener('click', (event) => {
+    const button = event.target.closest('.btn-add-to-cart');
+    if (button) {
+      const productId = button.dataset.productId;
+      const productToAdd = allProducts.find(p => p._id === productId);
 
-  // --- THIS IS THE CORRECTED EVENT LISTENER ---
-  if (productGrid) {
-    productGrid.addEventListener('click', (event) => {
-      const button = event.target.closest('.btn-add-to-cart');
-      if (button) {
-        event.preventDefault();
-        const productId = button.dataset.productId;
-        
-        // Find the full product object from our list
-        const productToAdd = allProducts.find(p => p._id === productId);
-
-        if (productToAdd) {
-          // Pass the necessary details to the addToCart function
-          addToCart({
-              productId: productToAdd._id,
-              name: productToAdd.name,
-              price: productToAdd.price,
-              image: productToAdd.image,
-          });
-
-          // Provide user feedback
-          button.textContent = "Added!";
-          button.disabled = true;
-          setTimeout(() => {
-            button.textContent = "Add to Cart";
-            button.disabled = false;
-          }, 1500);
-        }
+      if (productToAdd) {
+        addToCart({
+            productId: productToAdd._id,
+            name: productToAdd.name,
+            price: productToAdd.price,
+            image: productToAdd.image,
+        });
+        button.textContent = "Added!";
+        button.disabled = true;
+        setTimeout(() => {
+          button.textContent = "Add to Cart";
+          button.disabled = false;
+        }, 1500);
       }
-    });
-  }
+    }
+  });
   
-  if (searchBar) { searchBar.addEventListener('input', renderProducts); }
+  searchBar.addEventListener('input', () => {
+    currentFilters.search = searchBar.value.toLowerCase();
+    renderProducts();
+  });
 
-  if (filterButtonsContainer) {
-    filterButtonsContainer.addEventListener('click', (event) => {
-      const button = event.target.closest('.filter-btn');
-      if (button) {
-        currentCategory = button.dataset.category;
-        filterButtonsContainer.querySelector('.active').classList.remove('active');
-        button.classList.add('active');
-        renderProducts();
-      }
-    });
-  }
-
-  if (sortBySelect) {
-    sortBySelect.addEventListener('change', (event) => {
-      currentSort = event.target.value;
+  filterButtonsContainer.addEventListener('click', (event) => {
+    const button = event.target.closest('.filter-btn');
+    if (button) {
+      currentFilters.category = button.dataset.category;
+      filterButtonsContainer.querySelector('.active').classList.remove('active');
+      button.classList.add('active');
       renderProducts();
-    });
-  }
+    }
+  });
 
-  fetchAndRenderProducts();
+  sortBySelect.addEventListener('change', (event) => {
+    currentFilters.sort = event.target.value;
+    renderProducts();
+  });
+
+  fetchProducts();
 })();

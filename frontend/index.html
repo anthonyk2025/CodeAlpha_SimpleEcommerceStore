@@ -2,17 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale-a.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TechNova - Cutting-Edge Tech</title>
   
   <!-- Google Fonts: Orbitron for the logo, Poppins for the body text -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+   <div id="toast-container"></div>
 
   <header>
     <a href="index.html" class="logo">Tech<span>Nova</span></a>
@@ -32,18 +36,39 @@
   </header>
 
   <main>
-    <section class="hero">
-      <div class="container hero-layout">
-        <div class="hero-text">
-          <h1>Welcome to TechNova</h1>
-          <p>Your one-stop shop for the latest and greatest in tech gadgets. Quality you can trust, prices you'll love.</p>
-          <a href="#products-section" class="btn-primary">Explore Products</a>
-        </div>
-        <div class="hero-image">
-          <img src="https://static.vecteezy.com/system/resources/previews/000/600/113/original/technology-logo-icon-vectors.jpg" alt="Modern tech gadgets display">
-        </div>
+    <!-- THIS IS THE NEW ANIMATED HERO SECTION -->
+<!-- THIS IS THE COMPLETE AND CORRECT HERO SECTION FOR INDEX.HTML -->
+<section class="hero animated-hero">
+  <div class="animated-hero-container">
+    
+    <!-- The Central Orb (This is the element that was likely missing) -->
+    <div class="central-orb">
+      <div class="orb-text">
+        <a href="index.html" class="orb-logo">Tech<span>Nova</span></a>
+        <p class="orb-slogan">A curated collection of the finest gadgets.</p>
       </div>
-    </section>
+    </div>
+
+    <!-- The Floating, Orbiting Icons -->
+    <div class="orbiting-icon" id="icon-phone">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"></path></svg>
+    </div>
+    <div class="orbiting-icon" id="icon-headphones">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12v6c0 1.1.9 2 2 2h2v-8H4v-2c0-4.41 3.59-8 8-8s8 3.59 8 8v2h-2v8h2c1.1 0 2-.9 2-2v-6C22 6.48 17.52 2 12 2z"></path></svg>
+    </div>
+    <div class="orbiting-icon" id="icon-laptop">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"></path></svg>
+    </div>
+    
+  </div>
+  <!-- THIS IS THE NEW, INTERACTIVE BUTTON -->
+<a href="#products-section" class="btn-primary hero-explore-btn">
+  <span>Explore Products</span>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="hero-btn-icon">
+    <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path>
+  </svg>
+</a>
+</section>
 
     <section id="products-section" class="container">
       <div class="product-toolbar">
@@ -73,44 +98,49 @@
         </div>
       </div>
 
-      <div id="product-grid" class="grid">
-        <!-- Products will be dynamically inserted here -->
-      </div>
-      <div id="loading-indicator" style="display: none;"><p>Loading products...</p></div>
-      <div id="no-results-message" style="display: none;"><p>No products found.</p></div>
+      <!-- THIS IS THE NEW CONTAINER FOR OUR REACT COMPONENT -->
+<div id="react-product-list"></div>
     </section>
   </main>
 
+  <!-- NEW PROFESSIONAL FOOTER -->
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-about">
         <a href="index.html" class="logo">Tech<span>Nova</span></a>
-        <p>Cutting-edge tech, delivered to you.</p>
+        <p>Cutting-edge tech, delivered to you. The future is now.</p>
+        <div class="footer-social">
+            <a href="#" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-1.5c-1 0-1.5.5-1.5 1.5V12h3l-.5 3h-2.5v6.8c4.56-.93 8-4.96 8-9.8z"/></svg></a>
+            <a href="#" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C7.7 9.09 4.07 7.13 1.64 4.15c-.33.58-.52 1.25-.52 1.96 0 1.49.76 2.8 1.92 3.57-.7-.02-1.36-.21-1.94-.53v.05c0 2.08 1.48 3.82 3.44 4.21-.36.1-.74.15-1.14.15-.28 0-.55-.03-.81-.08.55 1.7 2.14 2.94 4.03 2.97-1.47 1.15-3.32 1.83-5.33 1.83-.35 0-.69-.02-1.03-.06 1.9 1.22 4.16 1.92 6.56 1.92 7.88 0 12.2-6.52 12.2-12.2 0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg></a>
+            <a href="#" aria-label="Instagram"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
+        </div>
       </div>
       <div class="footer-links">
         <h4>Quick Links</h4>
         <ul>
           <li><a href="index.html">Home</a></li>
-          <li><a href="cart.html">Cart</a></li>
+          <li><a href="#products-section">Products</a></li>
+          <li><a href="cart.html">Shopping Cart</a></li>
           <li><a href="orders.html">My Orders</a></li>
         </ul>
       </div>
-      <div class="footer-social">
-        <h4>Follow Us</h4>
-        <div>
-          <a href="#" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-1.5c-1 0-1.5.5-1.5 1.5V12h3l-.5 3h-2.5v6.8c4.56-.93 8-4.96 8-9.8z"/></svg></a>
-          <a href="#" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C7.7 9.09 4.07 7.13 1.64 4.15c-.33.58-.52 1.25-.52 1.96 0 1.49.76 2.8 1.92 3.57-.7-.02-1.36-.21-1.94-.53v.05c0 2.08 1.48 3.82 3.44 4.21-.36.1-.74.15-1.14.15-.28 0-.55-.03-.81-.08.55 1.7 2.14 2.94 4.03 2.97-1.47 1.15-3.32 1.83-5.33 1.83-.35 0-.69-.02-1.03-.06 1.9 1.22 4.16 1.92 6.56 1.92 7.88 0 12.2-6.52 12.2-12.2 0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg></a>
-        </div>
+       <div class="footer-links">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Shipping Info</a></li>
+          <li><a href="#">Returns</a></li>
+        </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2024 TechNova. All Rights Reserved.</p>
+      <p>&copy; 2024 TechNova. All rights reserved.</p>
     </div>
   </footer>
-
+   <script src="js/toast-notification.js"></script>
   <script src="js/auth-ui.js"></script>
-  <script src="js/product-list.js"></script>
+<script src="js/product-list-react.js" type="text/babel"></script>
   <script src="js/nav.js"></script> 
 </body>
 </html>
