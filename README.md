@@ -1,4 +1,4 @@
-# Simple E‑Commerce Store
+# TechNova Simple E‑Commerce Store
 
 Stack: **Express.js + MongoDB** backend, **HTML/CSS/JS** frontend.
 
